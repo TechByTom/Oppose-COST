@@ -1,42 +1,40 @@
-package main
+// ... (other imports)
+import "html/template"
 
-import (
-    "fmt"
-    "log"
-    "net/http"
-)
-
+// ...
 func handleAdminRequests(w http.ResponseWriter, r *http.Request) {
-    // This is where you'll handle admin-specific requests
-    fmt.Fprintf(w, "Hello, Administrator!")
-}
-
-func handleClientRequests(w http.ResponseWriter, r *http.Request) {
-    // This is where you'll handle client-specific requests
-    fmt.Fprintf(w, "Hello, Client Application!")
+    tmpl, err := template.ParseFiles("admin.html")
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    tmpl.Execute(w, nil)
 }
 
 func main() {
-    // Admin server
-    adminMux := http.NewServeMux()
-    adminMux.HandleFunc("/", handleAdminRequests)
+    // ... (existing setup for adminMux and clientMux)
 
-    // Client server
-    clientMux := http.NewServeMux()
-    clientMux.HandleFunc("/", handleClientRequests)
+    // Add a new route for handling build requests
+    adminMux.HandleFunc("/build", handleBuildRequest)
 
-    // Start the admin server in a goroutine so that it doesn't block
-    go func() {
-        fmt.Println("Admin server starting on port 8080...")
-        if err := http.ListenAndServe(":8080", adminMux); err != nil {
-            log.Fatal("Admin Server: ", err)
-        }
-    }()
+    // ... (existing code to start servers)
+}
 
-    // Start the client server
-    fmt.Println("Client server starting on port 80...")
-    if err := http.ListenAndServe(":80", clientMux); err != nil {
-        log.Fatal("Client Server: ", err)
+// handleBuildRequest will handle the build process
+func handleBuildRequest(w http.ResponseWriter, r *http.Request) {
+    if r.Method != "POST" {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
     }
+
+    // Extract the selected system type from the form data
+    r.ParseForm()
+    systemType := r.FormValue("system")
+
+    // TODO: Implement the build logic for the selected system type
+    // For now, we'll just log the selected type
+    log.Println("Building client for system:", systemType)
+
+    // TODO: Initiate the download of the built application
 }
 
