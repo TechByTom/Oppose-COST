@@ -5,6 +5,7 @@
         <script>
             function buildAndDownload() {
                 var systemType = document.getElementById("system").value;
+                var osName = getOSName(); // Function to get the OS name
 
                 fetch('/build', {
                     method: 'POST',
@@ -15,16 +16,30 @@
                 })
                 .then(response => response.blob())
                 .then(blob => {
+                    var filename = osName + '-' + blob.type.split('/')[1]; // Combine OS name and file extension
                     var url = window.URL.createObjectURL(blob);
                     var a = document.createElement('a');
                     a.href = url;
-                    a.download = ''; // The filename will be set by the server's Content-Disposition header
+                    a.download = filename;
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
                     window.URL.revokeObjectURL(url);
                 })
                 .catch(error => console.error('Error:', error));
+            }
+
+            function getOSName() {
+                var userAgent = window.navigator.userAgent;
+                if (userAgent.includes('Windows')) {
+                    return 'Windows';
+                } else if (userAgent.includes('Linux')) {
+                    return 'Linux';
+                } else if (userAgent.includes('Mac OS')) {
+                    return 'MacOS';
+                } else {
+                    return 'Unknown';
+                }
             }
         </script>
 </head>
@@ -37,6 +52,42 @@
         <option value="macos">macOS</option>
     </select>
     <button onclick="buildAndDownload()">Build and Download</button>
+</body>
+<body>
+    <!-- ... existing body content ... -->
+
+    <h2>Interact with a Client Application</h2>
+
+    <!-- Execute a Command Section -->
+    <div>
+        <h3>Execute a Command</h3>
+        <select id="client-id">
+            <!-- Options for client IDs will be populated here -->
+        </select>
+        <input type="text" id="command" placeholder="Enter command">
+        <button onclick="executeCommand()">Execute</button>
+    </div>
+
+    <!-- Upload a File Section -->
+    <div>
+        <h3>Upload a File</h3>
+        <select id="file-client-id">
+            <!-- Options for client IDs will be populated here -->
+        </select>
+        <input type="file" id="file">
+        <button onclick="uploadFile()">Upload</button>
+    </div>
+
+    <script>
+        // JavaScript functions to handle command execution and file upload
+        function executeCommand() {
+            // TODO: Implement AJAX request to send the command to the server
+        }
+
+        function uploadFile() {
+            // TODO: Implement AJAX request to upload the file to the server
+        }
+    </script>
 </body>
 </html>
 
