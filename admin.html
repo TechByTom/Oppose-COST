@@ -1,47 +1,36 @@
-<!-- admin.html -->
 <html>
 <head>
     <title>Admin Interface</title>
-        <script>
-            function buildAndDownload() {
-                var systemType = document.getElementById("system").value;
-                var osName = getOSName(); // Function to get the OS name
+    <script>
+        function buildAndDownload() {
+            var systemType = document.getElementById("system").value;
 
-                fetch('/build', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: 'system=' + systemType
-                })
-                .then(response => response.blob())
-                .then(blob => {
-                    var filename = osName + '-' + blob.type.split('/')[1]; // Combine OS name and file extension
-                    var url = window.URL.createObjectURL(blob);
-                    var a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    window.URL.revokeObjectURL(url);
-                })
-                .catch(error => console.error('Error:', error));
-            }
+            fetch('/build', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'system=' + systemType
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                
+                var selectedOS = document.getElementById("system").value;
+                var uuid = document.getElementById("uuid").value;
 
-            function getOSName() {
-                var userAgent = window.navigator.userAgent;
-                if (userAgent.includes('Windows')) {
-                    return 'Windows';
-                } else if (userAgent.includes('Linux')) {
-                    return 'Linux';
-                } else if (userAgent.includes('Mac OS')) {
-                    return 'MacOS';
-                } else {
-                    return 'Unknown';
-                }
-            }
-        </script>
+                a.href = url;
+                a.download = selectedOS + '-' + uuid + '.ext';
+                
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
 </head>
 <body>
     <h1>Build Client Application</h1>
@@ -52,9 +41,6 @@
         <option value="macos">macOS</option>
     </select>
     <button onclick="buildAndDownload()">Build and Download</button>
-</body>
-<body>
-    <!-- ... existing body content ... -->
 
     <h2>Interact with a Client Application</h2>
 
@@ -79,7 +65,7 @@
     </div>
 
     <script>
-        // JavaScript functions to handle command execution and file upload
+        // JavaScript functions for command execution and file upload
         function executeCommand() {
             // TODO: Implement AJAX request to send the command to the server
         }
