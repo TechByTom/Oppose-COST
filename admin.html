@@ -1,7 +1,24 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>Admin Interface</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/clients')
+                .then(response => response.json())
+                .then(clients => {
+                    const clientIdSelect = document.getElementById('client-id');
+                    const fileClientIdSelect = document.getElementById('file-client-id');
+                    clients.forEach(client => {
+                        let option = new Option(client.UUID, client.UUID);
+                        clientIdSelect.add(option);
+                        fileClientIdSelect.add(option.cloneNode(true));
+                    });
+                })
+                .catch(error => console.error('Error fetching client list:', error));
+        });
+
         function buildAndDownload() {
             var systemType = document.getElementById("system").value;
 
@@ -16,13 +33,8 @@
             .then(blob => {
                 var url = window.URL.createObjectURL(blob);
                 var a = document.createElement('a');
-                
-                var selectedOS = document.getElementById("system").value;
-                var uuid = document.getElementById("uuid").value;
-
                 a.href = url;
-                a.download = selectedOS + '-' + uuid + '.ext';
-                
+                a.download = ''; // The filename will be set by the server's Content-Disposition header
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
@@ -30,50 +42,75 @@
             })
             .catch(error => console.error('Error:', error));
         }
-    </script>
-</head>
-<body>
-    <h1>Build Client Application</h1>
-    <label for="system">Choose a system:</label>
-    <select name="system" id="system">
-        <option value="windows">Windows</option>
-        <option value="linux">Linux</option>
-        <option value="macos">macOS</option>
-    </select>
-    <button onclick="buildAndDownload()">Build and Download</button>
 
-    <h2>Interact with a Client Application</h2>
-
-    <!-- Execute a Command Section -->
-    <div>
-        <h3>Execute a Command</h3>
-        <select id="client-id">
-            <!-- Options for client IDs will be populated here -->
-        </select>
-        <input type="text" id="command" placeholder="Enter command">
-        <button onclick="executeCommand()">Execute</button>
-    </div>
-
-    <!-- Upload a File Section -->
-    <div>
-        <h3>Upload a File</h3>
-        <select id="file-client-id">
-            <!-- Options for client IDs will be populated here -->
-        </select>
-        <input type="file" id="file">
-        <button onclick="uploadFile()">Upload</button>
-    </div>
-
-    <script>
-        // JavaScript functions for command execution and file upload
         function executeCommand() {
-            // TODO: Implement AJAX request to send the command to the server
+            // TODO: Implement the functionality to send a command to the server
+            alert("Execute command functionality not implemented yet.");
         }
 
         function uploadFile() {
-            // TODO: Implement AJAX request to upload the file to the server
+            // TODO: Implement the functionality to upload a file to the server
+            alert("Upload file functionality not implemented yet.");
         }
     </script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Admin Panel</a>
+        <!-- Navbar content -->
+    </nav>
+
+    <div class="container mt-4">
+        <h1>Build Client Application</h1>
+        <div class="form-group">
+            <label for="system">Choose a system:</label>
+            <select name="system" id="system" class="form-control">
+                <option value="windows">Windows</option>
+                <option value="linux">Linux</option>
+                <option value="macos">macOS</option>
+            </select>
+        </div>
+        <button onclick="buildAndDownload()" class="btn btn-primary">Build and Download</button>
+
+        <div class="mt-4">
+            <h2>Interact with a Client Application</h2>
+
+            <!-- Execute a Command Section -->
+            <div class="mt-3">
+                <h3>Execute a Command</h3>
+                <div class="form-group">
+                    <label for="client-id">Client ID:</label>
+                    <select id="client-id" class="form-control">
+                        <!-- Options for client IDs will be populated here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="command" class="form-control" placeholder="Enter command">
+                </div>
+                <button onclick="executeCommand()" class="btn btn-secondary">Execute</button>
+            </div>
+
+            <!-- Upload a File Section -->
+            <div class="mt-3">
+                <h3>Upload a File</h3>
+                <div class="form-group">
+                    <label for="file-client-id">Client ID:</label>
+                    <select id="file-client-id" class="form-control">
+                        <!-- Options for client IDs will be populated here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="file" id="file" class="form-control-file">
+                </div>
+                <button onclick="uploadFile()" class="btn btn-secondary">Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>
 
