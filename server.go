@@ -1,6 +1,8 @@
 package main
 
 import (
+    "os/exec"
+    "path/filepath"
     "bufio"
     "encoding/json"
     "crypto/rand"
@@ -67,8 +69,82 @@ func handleClientRequests(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleBuildRequest(w http.ResponseWriter, r *http.Request) {
-    // ... existing handleBuildRequest code ...
+    if r.Method != "POST" {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    r.ParseForm()
+    systemType := r.FormValue("system") // Retrieve the system type from the form
+
+    // Generate a UUID for the client build
+    clientID, err := generateUUID()
+    if err != nil {
+        log.Printf("Failed to generate UUID: %v", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
+    }
+
+    // Log the client info with UUID and system type
+    clientInfo := ClientInfo{UUID: clientID, Hostname: systemType}
+    if err := logClientInfo("client_log.txt", clientInfo); err != nil {
+        log.Printf("Failed to log client info: %v", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
+    }
+
+    // Temporary directory for building
+    buildDir, err := os.MkdirTemp("", "build")
+    if err != nil {
+        http.Error(w, "Failed to create build directory", http.StatusInternalServerError)
+        return
+    }
+    defer os.RemoveAll(buildDir) // Clean up after building
+
+    // Create a simple Go file
+    sourceFile := filepath.Join(buildDir, "main.go")
+    err = os.WriteFile(sourceFile, []byte(`package main
+import "fmt"
+func main() {
+    fmt.Println("Hello world!")
+}`), 0644)
+    if err != nil {
+        http.Error(w, "Failed to create source file", http.StatusInternalServerError)
+        return
+    }
+
+    // Set environment variables for cross-compilation
+    var goos, goarch string
+    switch systemType {
+    case "windows":
+        goos = "windows"
+        goarch = "amd64"
+    case "linux":
+        goos = "linux"
+        goarch = "amd64"
+    case "macos":
+        goos = "darwin"
+        goarch = "amd64"
+    default:
+        http.Error(w, "Invalid system type", http.StatusBadRequest)
+        return
+    }
+
+    // Compile the Go file
+    outputFile := filepath.Join(buildDir, "output")
+    cmd := exec.Command("go", "build", "-o", outputFile, sourceFile)
+    cmd.Env = append(os.Environ(), "GOOS="+goos, "GOARCH="+goarch)
+    if err := cmd.Run(); err != nil {
+        http.Error(w, "Failed to compile binary", http.StatusInternalServerError)
+        return
+    }
+
+    // Serve the compiled binary
+    w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filepath.Base(outputFile)))
+    w.Header().Set("Content-Type", "application/octet-stream")
+    http.ServeFile(w, r, outputFile)
 }
+
 
 func handleClientList(w http.ResponseWriter, r *http.Request) {
     // Check if client_log.txt exists
