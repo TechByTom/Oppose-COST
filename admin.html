@@ -1,17 +1,42 @@
 <!-- admin.html -->
 <html>
-<head><title>Admin Interface</title></head>
+<head>
+    <title>Admin Interface</title>
+    <script>
+        function buildAndDownload() {
+            var systemType = document.getElementById("system").value;
+
+            fetch('/build', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'system=' + systemType
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'client-app';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</head>
 <body>
     <h1>Build Client Application</h1>
-    <form action="/build" method="post">
-        <label for="system">Choose a system:</label>
-        <select name="system" id="system">
-            <option value="windows">Windows</option>
-            <option value="linux">Linux</option>
-            <option value="macos">macOS</option>
-        </select>
-        <input type="submit" value="Build and Download">
-    </form>
+    <label for="system">Choose a system:</label>
+    <select name="system" id="system">
+        <option value="windows">Windows</option>
+        <option value="linux">Linux</option>
+        <option value="macos">macOS</option>
+    </select>
+    <button onclick="buildAndDownload()">Build and Download</button>
 </body>
 </html>
 
