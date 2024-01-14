@@ -2,31 +2,31 @@
 <html>
 <head>
     <title>Admin Interface</title>
-    <script>
-        function buildAndDownload() {
-            var systemType = document.getElementById("system").value;
+        <script>
+            function buildAndDownload() {
+                var systemType = document.getElementById("system").value;
 
-            fetch('/build', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'system=' + systemType
-            })
-            .then(response => response.blob())
-            .then(blob => {
-                var url = window.URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = 'client-app';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    </script>
+                fetch('/build', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'system=' + systemType
+                })
+                .then(response => response.blob())
+                .then(blob => {
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = ''; // The filename will be set by the server's Content-Disposition header
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        </script>
 </head>
 <body>
     <h1>Build Client Application</h1>

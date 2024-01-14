@@ -71,9 +71,8 @@ func handleBuildRequest(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // Temporarily comment out the systemType variable
-    // r.ParseForm()
-    // systemType := r.FormValue("system")
+    r.ParseForm()
+    systemType := r.FormValue("system") // Retrieve the system type from the form
 
     // Generate a UUID for the client build
     clientID, err := generateUUID()
@@ -82,11 +81,8 @@ func handleBuildRequest(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Internal Server Error", http.StatusInternalServerError)
         return
     }
-    log.Println("Client ID:", clientID)
 
-    // TODO: Implement the build logic for the selected system type
-
-    // Create a new ClientInfo and write it to the log file
+    // Log the client info
     clientInfo := ClientInfo{UUID: clientID}
     if err := logClientInfo("client_log.txt", clientInfo); err != nil {
         log.Printf("Failed to log client info: %v", err)
@@ -94,11 +90,13 @@ func handleBuildRequest(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // Serve the file
-    w.Header().Set("Content-Disposition", "attachment; filename=client-app")
+    // Set the filename to include the system type and the UUID
+    filename := fmt.Sprintf("%s-%s", systemType, clientID)
+    w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
     w.Header().Set("Content-Type", "application/octet-stream")
-    w.Write([]byte("This is the built client application"))
 
+    // Send the file content
+    w.Write([]byte("This is the built client application for " + systemType))
 }
 
 func main() {
