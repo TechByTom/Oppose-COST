@@ -1,6 +1,8 @@
 package main
 
 import (
+    "os"
+    "encoding/json"
     "crypto/rand"
     "fmt"
     "io"
@@ -8,6 +10,31 @@ import (
     "net/http"
     "html/template"
 )
+
+// ClientInfo represents the information about a client application
+type ClientInfo struct {
+    UUID     string
+    Hostname string // To be filled when provided by the client
+}
+
+func logClientInfo(filename string, info ClientInfo) error {
+    file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+
+    data, err := json.Marshal(info)
+    if err != nil {
+        return err
+    }
+
+    if _, err := file.Write(append(data, '\n')); err != nil {
+        return err
+    }
+
+    return nil
+}
 
 func generateUUID() (string, error) {
     uuid := make([]byte, 16)
@@ -59,12 +86,19 @@ func handleBuildRequest(w http.ResponseWriter, r *http.Request) {
 
     // TODO: Implement the build logic for the selected system type
 
-    // TODO: Store the client ID and associate it with the built application
+    // Create a new ClientInfo and write it to the log file
+    clientInfo := ClientInfo{UUID: clientID}
+    if err := logClientInfo("client_log.txt", clientInfo); err != nil {
+        log.Printf("Failed to log client info: %v", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
+    }
 
     // Serve the file
     w.Header().Set("Content-Disposition", "attachment; filename=client-app")
     w.Header().Set("Content-Type", "application/octet-stream")
     w.Write([]byte("This is the built client application"))
+
 }
 
 func main() {
